@@ -15,7 +15,8 @@ import time
 
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = 'mongodb+srv://akash18tripathi:akash1812@autodp.c5pgb6n.mongodb.net/?retryWrites=true&w=majority'
+#Fill MONGODB Details here.
+app.config['MONGO_URI'] = ''
 app.secret_key = '574840d7-bb58-43e2-aab8-58f81ffb20e0'
 
 client = MongoClient(app.config['MONGO_URI'])
