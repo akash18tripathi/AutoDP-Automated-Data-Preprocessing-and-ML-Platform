@@ -25,7 +25,7 @@ def kill_processes_on_port(port):
 
 if __name__ == "__main__":
     # List of service scripts to start
-    services_to_start = ["server","data_validation", "processing", "training","notification_service"]
+    services_to_start = ["server","Data-Validation-Service/data_validation", "Data-Processing-Service/processing", "Model-Training-Service/training","Notification-Service/notification_service"]
     
     kill_processes_on_port(5000)
     kill_processes_on_port(5001)
