@@ -10,6 +10,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from kafka import KafkaProducer
 import threading
 import time
+import logging
 
 
 
@@ -22,6 +23,8 @@ app.secret_key = '574840d7-bb58-43e2-aab8-58f81ffb20e0'
 client = MongoClient(app.config['MONGO_URI'])
 db = client['AutoDP-Login-Service']  # Replace with your database name
 users_collection = db['users'] 
+# log_collection = db['logs']
+logging.basicConfig(filename='app.log', level=logging.INFO)
 
 
 # Initialize Flask-Login
@@ -57,12 +60,14 @@ def hello():
 
 @app.route('/register', methods=['POST'])
 def register():
+	
 	data = request.json
 	username = data['username']
 	password = data['password']
+	logging.info(time.time()+": /register POST hit by "+ username)
 	
-	# existing_user = mongo.db.users.find_one({'username': username})
-	if False:
+	existing_user = users_collection.find_one({'username': username})
+	if existing_user==True:
 		return jsonify({'message': 'Username already exists'}), 400
 	
 	new_user = {
@@ -89,6 +94,7 @@ def login():
 	data = request.json
 	username = data['username']
 	password = data['password']
+	logging.info(time.time()+": /login POST hit by "+ username)
 
 	# print("YESS")
 
@@ -115,6 +121,7 @@ def login():
 def uploadData():
 	if request.method == 'POST':
 		# print(current_user.id)
+		logging.info(time.time()+": /upload POST hit by "+ current_user.id)
 		
 		if not os.path.exists('users/'+ current_user.id+'/data/'):
 			os.makedirs('users/'+ current_user.id+'/data/')
@@ -135,6 +142,7 @@ def uploadData():
 
 @app.route('/get_items', methods = ['POST'])
 def getItems():
+	logging.info(time.time()+": /get_items POST hit")
 	data = request.json  # Retrieve JSON data from the request
 	itemDetails={'id':current_user.id,'filename':current_user.filename}
 	# print("FILEEE: "+ current_user.filename)
@@ -144,6 +152,7 @@ def getItems():
 
 @app.route('/get_summary', methods = ['GET'])
 def getSummary():
+	logging.info(time.time()+": /get_summary GET hit by "+ current_user.id)
 	itemDetails={'id':current_user.id,'filename':current_user.filename}
 	# print("FILEEE: "+ current_user.filename)
 	data = [itemDetails]
@@ -159,6 +168,7 @@ def getSummary():
 
 @app.route('/preprocess_data', methods = ['POST'])
 def preProcess():
+	logging.info(time.time()+": /preprocess_data POST hit by "+ current_user.id)
 	data = request.json  # Retrieve JSON data from the request
 	itemDetails={'id':current_user.id,'filename':current_user.filename}
 	# print("FILEEE: "+ current_user.filename)
@@ -170,6 +180,7 @@ def preProcess():
 
 @app.route('/train_data', methods = ['POST'])
 def train():
+	logging.info(time.time()+": /train_data POST hit by "+ current_user.id)
 	data = request.json  # Retrieve JSON data from the request
 	data['user_details']={'id':current_user.id,'filename':current_user.filename}
 	# print("FILEEE: "+ current_user.filename)
@@ -187,6 +198,8 @@ def train():
 def downloadModel():
 	# print("FILEEE: "+ current_user.filename)
     # Create a response to serve the HTML content for download
+	logging.info(time.time()+": /download_model GET hit by "+ current_user.id)
+
 	try:
 		model_path = 'users/'+str(current_user.id)+'/model/model.pkl'
 		response = make_response(send_file(model_path, as_attachment=True))

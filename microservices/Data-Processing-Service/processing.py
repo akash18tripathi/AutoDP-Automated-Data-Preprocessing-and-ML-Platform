@@ -6,14 +6,19 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 import requests
 from pandas_profiling import ProfileReport
-from kafka import KafkaProducer
+from kafka import KafkaProducer, KafkaConsumer
 import time
 import threading
+import logging
 
 
 
 
 app = Flask(__name__)
+logging.basicConfig(filename='./app.log', level=logging.INFO)
+
+producer = KafkaProducer(bootstrap_servers='localhost:9092')
+TOPIC_NAME = 'processing-topic'
 
 
 # @app.route('/')
@@ -89,7 +94,8 @@ def send_heartbeat():
 @app.route('/dummy_preprocess', methods = ['POST'])
 def getItems():
 	data =request.json
-	
+	logging.info(time.time()+": /dummy_preprocess POST hit by "+ str(data[0]['id']))
+
 	path = 'users/'+str(data[0]['id'])+'/data/'+str(data[0]['filename'])
 	json_data = requests.post(url="http://0.0.0.0:5002/get_validated",json=data)
 	df = pd.read_csv(path).head(20)
@@ -107,7 +113,7 @@ def getItems():
 @app.route('/get_summary', methods = ['POST'])
 def getSummary():
 	data =request.json
-	
+	logging.info(time.time()+": /get_summary POST hit by "+ str(data[0]['id']))
 	path = 'users/'+str(data[0]['id'])+'/data/'+str(data[0]['filename'])
 	json_data = requests.post(url="http://0.0.0.0:5002/get_validated",json=data)
 	df = pd.read_csv(path)
@@ -122,7 +128,7 @@ def getSummary():
 		resp = make_response(html_content)
 		# resp.headers["Content-Disposition"] = "attachment; filename=report.html"
 		resp.headers["Content-Type"] = "text/html"
-
+		del df
 		return resp
 		# return jsonify(json_data)
 	else:
@@ -133,18 +139,31 @@ def getSummary():
 @app.route('/preprocess', methods = ['POST'])
 def preProcess():
 	data =request.json
-	print(data[0])
+	# print(data[0])
+	logging.info(time.time()+": /preprocess POST hit by "+ str(data[0]['id']))
 	path = 'users/'+str(data[0]['id'])+'/data/'+str(data[0]['filename'])
-	json_data = requests.post(url="http://0.0.0.0:5002/get_validated",json=data)	
-	print(json_data)
-	df = pd.read_csv(path)
-	for row in data[1:]:
-		df = parseItem(row,df)
+	# json_data = requests.post(url="http://0.0.0.0:5002/get_validated",json=data)	
+	# print(json_data)
+	data = {'id':data[0]['id'],'filename':path}
+	data = json.dumps(data).encode('utf-8')
+	producer.send('processing-topic',data)
 
-	# Create a response with the CSV data and appropriate headers
+
+	return {"message","Request Sent, You can Chill"}
+
+@app.route('/download_data', methods = ['POST'])
+def preProcess():
+	data =request.json
+	# print(data[0])
+	logging.info(time.time()+": /download_data POST hit by "+ str(data[0]['id']))
+	path = 'users/'+str(data[0]['id'])+'/data/'+str(data[0]['filename'])
+	# json_data = requests.post(url="http://0.0.0.0:5002/get_validated",json=data)	
+	# print(json_data)
+	df = pd.read_csv(path)
 	resp = make_response(df.to_csv())
 	resp.headers["Content-Disposition"] = "attachment; filename=data.csv"
 	resp.headers["Content-Type"] = "text/csv"
+	del df
 
 	return resp
 

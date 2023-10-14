@@ -4,7 +4,7 @@ from kafka.errors import TopicAlreadyExistsError
 
 # Define the Kafka broker(s) and topic name
 bootstrap_servers = 'localhost:9092'
-topic_list = ['train-topic','notification-topic','health-topic']
+topic_list = ['train-topic','notification-topic','health-topic','processing-topic']
 
 # Create a KafkaAdminClient
 admin_client = KafkaAdminClient(bootstrap_servers=bootstrap_servers)
