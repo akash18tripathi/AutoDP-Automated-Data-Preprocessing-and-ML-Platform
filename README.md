@@ -6,9 +6,22 @@
 
 This Automated Data Preprocessing and Model Training Platform is a user-friendly, no-code solution that empowers users to effortlessly upload, manipulate, and analyze their datasets while seamlessly training machine learning models. With an intuitive interface, it eliminates the need for manual coding and simplifies data preprocessing, model selection, and hyperparameter tuning. This platform ensures data professionals and domain experts can efficiently navigate the machine learning pipeline, fostering data-driven insights and rapid model development for a wide range of applications.
 
-## Architecture Diagram
+# Architecture Diagram
 
 ![Architecture Diagram](diagram.jpg)
+
+# Functional Requirements
+
+1) Automated Tabular Data Preprocessing.
+2) Ability to upload and download the Processed dataset.
+3) Get summary report of dataset on just a click!
+4) Train Machine Learning models.
+5) Download model file.
+6) Authentication and Authorization.
+7) User recieves notification on job completion
+8) Admin recieve notification on Service/System failure
+9) Continual request persistence, ensuring that even in the event of system failure, when the system is operational again, it will resume processing the pending requests.
+
 
 ## Folder Structure
 
@@ -73,9 +86,16 @@ This Automated Data Preprocessing and Model Training Platform is a user-friendly
 
 - This will UP all the Microservices in backend. Admin will just run this to create instances of all microservices.
 
+# Future extensions of this project
+
+- Adding functional abilities for text and image data as well.
+- Add Deep learning model functionalities.
+- Provide a code editor for manual manipulation.
+- Make the file system mount to cloud.
+- Dynamic port generation for microservices.
 
 ## Contributions
 
 Contributions to this project are welcome! If you find any issues or have ideas for improvements, please feel free to open an issue or submit a pull request.
 
-Let's make Kthis scalable!!
+Let's make this scalable together!!
