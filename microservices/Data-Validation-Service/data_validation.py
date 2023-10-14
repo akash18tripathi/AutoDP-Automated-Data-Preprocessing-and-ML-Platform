@@ -12,7 +12,7 @@ from kafka import KafkaProducer
 app = Flask(__name__)
 
 heartbeat_producer = KafkaProducer(bootstrap_servers='localhost:9092')
-
+chunkSize=1000
 
 def send_heartbeat():
 	while True:
@@ -74,18 +74,20 @@ def isItemValid(item,df):
 
 @app.route('/get_validated', methods = ['POST'])
 def getItems():
-    data =request.json
-    path = 'users/'+str(data[0]['id'])+'/data/'+str(data[0]['filename'])
-    df = pd.read_csv(path).head()
-    # with open(json_file_path, 'r') as json_file:
-    #     config_data = json.load(json_file)
-    for row in data[1:]:
-        df = isItemValid(row,df)
-        if isinstance(df, pd.DataFrame):
-            continue
-        elif df is False:
-            return jsonify({'validation': 'failed'}) 
-    return jsonify({'validation': 'successful'})
+	data =request.json
+	path = 'users/'+str(data[0]['id'])+'/data/'+str(data[0]['filename'])
+	df = pd.read_csv(path,chunksize=chunkSize)
+	# with open(json_file_path, 'r') as json_file:
+	#     config_data = json.load(json_file)
+
+	for row in data[1:]:
+		for chunk in df:
+			chunk = isItemValid(row,chunk)
+			if isinstance(chunk, pd.DataFrame):
+				continue
+			elif chunk is False:
+				return jsonify({'validation': 'failed'}) 
+	return jsonify({'validation': 'successful'})
 
 if __name__ == '__main__':
 	heartbeat_producer = KafkaProducer(bootstrap_servers='localhost:9092')
